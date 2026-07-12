@@ -1,14 +1,17 @@
-/* CSS variables - dark theme */
+/* CSS variables - coastal light theme */
 :root {
-  --bg: #0d0d0d;
-  --surface: #141414;
-  --border: #222;
-  --text-primary: #f0f0f0;
-  --text-secondary: #888;
-  --accent: #c8102e;
-  --accent-hover: #e01030;
-  --btn-secondary-bg: #1c1c1c;
-  --btn-secondary-hover: #252525;
+  --bg: #eaf0f7;
+  --surface: #f5f8fc;
+  --border: #d0dcea;
+  --text-primary: #1c2b3a;
+  --text-secondary: #4a6070;
+  --accent: #3a6ea5;
+  --accent-hover: #2f5a8a;
+  --btn-secondary-bg: #e4edf7;
+  --btn-secondary-hover: #d6e4f0;
+  --btn-secondary-text: #1c2b3a;
+  --btn-secondary-border: #b8ccdf;
+  --title-color: #3a6ea5;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -72,7 +75,7 @@ body {
   font-size: 0.875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--title-color);
   margin-bottom: 1.5rem;
 }
 
@@ -128,8 +131,8 @@ body {
 /* Secondary button - ghost style */
 .btn-secondary {
   background-color: var(--btn-secondary-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
 }
 
 .btn-secondary:hover {
@@ -145,8 +148,16 @@ body {
 
 /* Mobile */
 @media (max-width: 520px) {
+  .shell {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .card {
-    padding: 2.25rem 1.5rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 3rem 1.5rem;
   }
 
   .name {
