@@ -36,51 +36,49 @@ Open http://localhost:8080 in your browser. No install or build step needed.
 
 ---
 
-## Configure DNS at OpenSRS (Tucows)
+## Configure DNS via Cloudflare
 
-Log in to your OpenSRS reseller panel (or the Tucows DNS management interface for manpearl.com).
+Railway only provides CNAME records (not A records), and the DNS spec forbids CNAME records at an apex domain. OpenSRS does not support CNAME flattening, so Cloudflare is used as the DNS provider. Cloudflare's CNAME flattening handles the apex domain transparently.
 
-### Records to add or update
+### Step 1 - Add manpearl.com to Cloudflare
 
-Google Workspace MX records are already in place - do not change or delete them.
+1. Log in to your existing Cloudflare account.
+2. Click **Add a domain**, enter `manpearl.com`, and select the free plan.
+3. Cloudflare scans existing DNS records and imports them. Verify that your Google Workspace records are present:
 
-#### For the apex domain (manpearl.com)
+| Type | Name | Value | Priority |
+|------|------|-------|----------|
+| MX | `manpearl.com` | `smtp.google.com` | 1 |
+| TXT | `manpearl.com` | `google-site-verification=...` | - |
 
-Railway provides an A record IP for apex domains. In the Railway domain settings panel, look for **"Apex domain"** instructions. They will show one or more IP addresses.
+Add them manually if missing - do not proceed without these or email will break.
 
-Add an **A record**:
+4. Cloudflare gives you two nameserver addresses (e.g. `xxx.ns.cloudflare.com`).
 
-| Type | Host/Name | Value | TTL |
-|------|-----------|-------|-----|
-| A | @ (or blank) | (IP shown in Railway) | 300 |
+### Step 2 - Point OpenSRS to Cloudflare nameservers
 
-If Railway shows multiple IPs, add one A record per IP.
+1. Log in to OpenSRS and open the management panel for `manpearl.com`.
+2. If the domain is locked, disable the **Domain Lock** (Registrar Lock) first.
+3. Update the nameservers to the two Cloudflare addresses from Step 1.
+4. You can re-lock the domain after the nameservers are saved.
 
-#### For www subdomain (optional but recommended)
+### Step 3 - Add Railway records in Cloudflare DNS
 
-Add a **CNAME record**:
+Add both records Railway provided when you added the custom domain:
 
-| Type | Host/Name | Value | TTL |
-|------|-----------|-------|-----|
-| CNAME | www | (Railway domain shown in settings, e.g. `manpearl-website-production.up.railway.app`) | 300 |
+| Type | Name | Value | Proxy |
+|------|------|-------|-------|
+| CNAME | `manpearl.com` | (Railway `.up.railway.app` domain) | DNS only (gray cloud) |
+| CNAME | `www` | (Railway `.up.railway.app` domain) | DNS only (gray cloud) |
+| TXT | `manpearl.com` | (Railway verification string) | - |
 
-#### TXT record for domain verification
+Set proxy status to **DNS only** for both CNAMEs - Railway handles SSL itself and the Cloudflare proxy can interfere.
 
-Railway requires a TXT record to verify ownership before activating SSL.
+### Step 4 - Verify in Railway
 
-| Type | Host/Name | Value | TTL |
-|------|-----------|-------|-----|
-| TXT | @ (or blank) | (verification string shown in Railway) | 300 |
-
-### After adding DNS records
-
-1. DNS propagation takes a few minutes to a few hours. You can check with:
-   ```
-   dig manpearl.com A
-   dig TXT manpearl.com
-   ```
-2. Once propagated, go back to Railway and click **Verify** next to the domain.
-3. Railway auto-provisions an SSL certificate. The site will be live at https://manpearl.com.
+1. DNS propagation takes a few minutes to a few hours.
+2. Go back to Railway custom domain settings and click **Verify** for each domain.
+3. Railway auto-provisions SSL. The site will be live at https://manpearl.com and https://www.manpearl.com.
 
 ---
 
@@ -92,6 +90,6 @@ Railway redeploys automatically whenever you push to the GitHub repository's def
 
 ## Notes
 
-- Email (Google Workspace MX records) is independent of the web hosting A/CNAME records. Changing A records for web hosting does not affect email delivery.
+- Email (Google Workspace MX records) is managed in Cloudflare DNS. Do not delete or modify MX records when making web hosting changes.
 - The site has no backend, no environment variables, and no build step.
-- To add `www` redirect: add `www.manpearl.com` as a second Railway custom domain and set Railway to redirect it to the apex (Railway handles this natively).
+- Both `manpearl.com` and `www.manpearl.com` are configured as separate Railway custom domains.
